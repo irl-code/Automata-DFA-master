@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DFA Simulator</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- SweetAlert CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Header section -->
+    <div class="header-container">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1 class="app-title">
+              DFA Simulator <i class="fas fa-project-diagram ms-2"></i>
+            </h1>
+            <p class="app-subtitle">
+              Deterministic Finite Automaton Visualization & Testing
+            </p>
+          </div>
+          <div class="col-md-4 text-end">
+            <span class="badge bg-light text-dark p-2">
+              <i class="fas fa-book me-1"></i> Automata Theory
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Main content -->
+      <div class="row">
+        <!-- Form section -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-edit me-2"></i> Define Your DFA
+            </div>
+            <div class="card-body">
+              <form id="transition-table-form">
+                <div class="generator-controls">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="state-set" class="form-label">State Set (Q):</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-circle-nodes"></i></span>
+                        <input type="text" class="form-control" id="state-set" placeholder="q0, q1, q2" required>
+                      </div>
+                      <div class="hint-text">Enter state identifiers separated by commas</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="alphabet-set" class="form-label">Input Alphabet (Σ):</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-font"></i></span>
+                        <input type="text" class="form-control" id="alphabet-set" placeholder="0, 1" required>
+                      </div>
+                      <div class="hint-text">Enter symbols separated by commas</div>
+                    </div>
+                  </div>
+                  <div class="d-grid mt-3">
+                    <button type="button" id="generate-table" class="btn btn-outline-primary">
+                      <i class="fas fa-table me-2"></i>Generate Transition Table
+                    </button>
+                  </div>
+                </div>
+                
+                <div id="transition-table-container" class="transition-table-container d-none">
+                  <p class="mb-2"><strong>Transition Function (δ):</strong> Enter the next state for each state-input pair</p>
+                  <div id="transition-table-wrapper"></div>
+                </div>
+                
+                <div class="row mb-3 mt-4">
+                  <div class="col-md-6">
+                    <label for="initial-state" class="form-label">Initial State (q₀):</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-play"></i></span>
+                      <input type="text" class="form-control" id="initial-state" placeholder="q0" required>
+                    </div>
+                    <div class="hint-text">Enter the starting state of the automaton</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="accept-states" class="form-label">Accept States (F):</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-flag-checkered"></i></span>
+                      <input type="text" class="form-control" id="accept-states" placeholder="q1, q2" required>
+                    </div>
+                    <div class="hint-text">Enter accepting states separated by commas</div>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label for="input-string" class="form-label">Input String (w):</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-keyboard"></i></span>
+                    <input type="text" class="form-control" id="input-string" placeholder="0101" required>
+                  </div>
+                  <div class="hint-text">Enter a string to evaluate with the DFA</div>
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-play-circle me-2"></i> Execute Simulation
+                  </button>
+                </div>
+
+                <!-- Hidden field for tracking transition table generation -->
+                <input type="hidden" id="transition-table-generated" name="transition-table-generated" value="false">
+              </form>
+            </div>
+          </div>
+
+          <!-- Information section -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-info-circle me-2"></i> About DFAs
+            </div>
+            <div class="card-body">
+              <p>
+                A <strong>Deterministic Finite Automaton (DFA)</strong> is a
+                finite state machine that accepts or rejects a given string of
+                symbols by running through a state sequence uniquely determined
+                by the string.
+              </p>
+              <div class="row">
+                <div class="col-md-6">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <i class="fas fa-check-circle text-success me-2"></i> Set
+                      of states (Q)
+                    </li>
+                    <li>
+                      <i class="fas fa-check-circle text-success me-2"></i>
+                      Alphabet (Σ)
+                    </li>
+                    <li>
+                      <i class="fas fa-check-circle text-success me-2"></i>
+                      Transition function (δ)
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <i class="fas fa-check-circle text-success me-2"></i>
+                      Initial state (q₀)
+                    </li>
+                    <li>
+                      <i class="fas fa-check-circle text-success me-2"></i> Set
+                      of accept states (F)
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result section -->
+        <div class="col-lg-4">
+          <div class="card sticky-top" style="top: 20px">
+            <div class="card-header">
+              <i class="fas fa-table me-2"></i> Simulation Results
+            </div>
+            <div class="card-body">
+              <div id="result" class="result-output">
+                <p class="text-center text-muted">
+                  <i class="fas fa-robot fa-3x mb-3"></i><br />
+                  Enter DFA parameters and run the simulation to see results
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Section -->
+    <section class="team-section">
+      <div class="container">
+          <div class="team-header">
+              <h2 class="team-title">Meet the Team</h2>
+              <p class="team-subtitle">The talented minds behind this DFA Simulator project</p>
+          </div>
+          
+          <div class="row">
+              <div class="col-md-4">
+                  <div class="team-member">
+                      <div class="member-avatar">
+                          <i class="fas fa-user"></i>
+                      </div>
+                      <h3 class="member-name">Shayan Ali</h3>
+                      <p class="member-role">Lead Developer</p>
+                  </div>
+              </div>
+              
+              <div class="col-md-4">
+                  <div class="team-member">
+                      <div class="member-avatar">
+                          <i class="fas fa-user"></i>
+                      </div>
+                      <h3 class="member-name">Hamza Wahab</h3>
+                      <p class="member-role">Algorithm Specialist</p>
+                  </div>
+              </div>
+              
+              <div class="col-md-4">
+                  <div class="team-member">
+                      <div class="member-avatar">
+                          <i class="fas fa-user"></i>
+                      </div>
+                      <h3 class="member-name">Wania Amir</h3>
+                      <p class="member-role">UI/UX Designer</p>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="text-center text-white">
+              <p>© 2025 DFA Simulator | All Rights Reserved</p>
+          </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p class="mb-0">
+          <i class="fas fa-project-diagram me-1"></i> Crafted with <i class="fas fa-brain text-info mx-1"></i> and <i class="fas fa-sparkles text-warning mx-1"></i> by Automata Enthusiasts
+        </p>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <script src="./codebase/script.js"></script>
+  </body>
+</html>
