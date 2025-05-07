@@ -22,6 +22,7 @@
     />
     <!-- Custom CSS -->
     <link href="css/styles.css" rel="stylesheet" />
+    <link href="css/auth.css" rel="stylesheet" />
   </head>
   <body>
     <!-- Header section -->
@@ -37,9 +38,20 @@
             </p>
           </div>
           <div class="col-md-4 text-end">
-            <span class="badge bg-light text-dark p-2">
+            <span class="badge bg-light text-dark p-2 me-2">
               <i class="fas fa-book me-1"></i> Automata Theory
             </span>
+            <!-- User auth status -->
+            <div class="user-status-container d-inline-block">
+              <!-- Will be populated by JS -->
+              <span id="user-display"></span>
+              <button
+                id="sign-out-button"
+                class="btn btn-sm btn-outline-danger d-none"
+              >
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -59,70 +71,150 @@
                 <div class="generator-controls">
                   <div class="row">
                     <div class="col-md-6">
-                      <label for="state-set" class="form-label">State Set (Q):</label>
+                      <label for="state-set" class="form-label"
+                        >State Set (Q):</label
+                      >
                       <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-circle-nodes"></i></span>
-                        <input type="text" class="form-control" id="state-set" placeholder="q0, q1, q2" required>
+                        <span class="input-group-text"
+                          ><i class="fas fa-circle-nodes"></i
+                        ></span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="state-set"
+                          placeholder="q0, q1, q2"
+                          required
+                        />
                       </div>
-                      <div class="hint-text">Enter state identifiers separated by commas</div>
+                      <div class="hint-text">
+                        Enter state identifiers separated by commas
+                      </div>
                     </div>
                     <div class="col-md-6">
-                      <label for="alphabet-set" class="form-label">Input Alphabet (Σ):</label>
+                      <label for="alphabet-set" class="form-label"
+                        >Input Alphabet (Σ):</label
+                      >
                       <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-font"></i></span>
-                        <input type="text" class="form-control" id="alphabet-set" placeholder="0, 1" required>
+                        <span class="input-group-text"
+                          ><i class="fas fa-font"></i
+                        ></span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="alphabet-set"
+                          placeholder="0, 1"
+                          required
+                        />
                       </div>
-                      <div class="hint-text">Enter symbols separated by commas</div>
+                      <div class="hint-text">
+                        Enter symbols separated by commas
+                      </div>
                     </div>
                   </div>
                   <div class="d-grid mt-3">
-                    <button type="button" id="generate-table" class="btn btn-outline-primary">
+                    <button
+                      type="button"
+                      id="generate-table"
+                      class="btn btn-outline-primary"
+                    >
                       <i class="fas fa-table me-2"></i>Generate Transition Table
                     </button>
                   </div>
                 </div>
-                
-                <div id="transition-table-container" class="transition-table-container d-none">
-                  <p class="mb-2"><strong>Transition Function (δ):</strong> Enter the next state for each state-input pair</p>
+
+                <div
+                  id="transition-table-container"
+                  class="transition-table-container d-none"
+                >
+                  <p class="mb-2">
+                    <strong>Transition Function (δ):</strong> Enter the next
+                    state for each state-input pair
+                  </p>
                   <div id="transition-table-wrapper"></div>
                 </div>
-                
+
                 <div class="row mb-3 mt-4">
                   <div class="col-md-6">
-                    <label for="initial-state" class="form-label">Initial State (q₀):</label>
+                    <label for="initial-state" class="form-label"
+                      >Initial State (q₀):</label
+                    >
                     <div class="input-group">
-                      <span class="input-group-text"><i class="fas fa-play"></i></span>
-                      <input type="text" class="form-control" id="initial-state" placeholder="q0" required>
+                      <span class="input-group-text"
+                        ><i class="fas fa-play"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="initial-state"
+                        placeholder="q0"
+                        required
+                      />
                     </div>
-                    <div class="hint-text">Enter the starting state of the automaton</div>
+                    <div class="hint-text">
+                      Enter the starting state of the automaton
+                    </div>
                   </div>
                   <div class="col-md-6">
-                    <label for="accept-states" class="form-label">Accept States (F):</label>
+                    <label for="accept-states" class="form-label"
+                      >Accept States (F):</label
+                    >
                     <div class="input-group">
-                      <span class="input-group-text"><i class="fas fa-flag-checkered"></i></span>
-                      <input type="text" class="form-control" id="accept-states" placeholder="q1, q2" required>
+                      <span class="input-group-text"
+                        ><i class="fas fa-flag-checkered"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="accept-states"
+                        placeholder="q1, q2"
+                        required
+                      />
                     </div>
-                    <div class="hint-text">Enter accepting states separated by commas</div>
+                    <div class="hint-text">
+                      Enter accepting states separated by commas
+                    </div>
                   </div>
                 </div>
 
-                <div class="mb-4">
-                  <label for="input-string" class="form-label">Input String (w):</label>
+                <div class="mb-3">
+                  <label for="input-string" class="form-label"
+                    >Input String (w):</label
+                  >
                   <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-keyboard"></i></span>
-                    <input type="text" class="form-control" id="input-string" placeholder="0101" required>
+                    <span class="input-group-text"
+                      ><i class="fas fa-keyboard"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="input-string"
+                      placeholder="e.g. 10110"
+                      required
+                    />
+                    <button class="btn btn-primary" type="submit">
+                      <i class="fas fa-play me-1"></i> Run DFA
+                    </button>
                   </div>
-                  <div class="hint-text">Enter a string to evaluate with the DFA</div>
                 </div>
 
-                <div class="d-grid">
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-play-circle me-2"></i> Execute Simulation
+                <!-- Save DFA button (visible when logged in) -->
+                <div class="d-grid gap-2 mt-3 mb-4 save-dfa-container d-none">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    id="open-save-dfa-modal"
+                  >
+                    <i class="fas fa-save me-2"></i>Save This DFA
                   </button>
                 </div>
 
                 <!-- Hidden field for tracking transition table generation -->
-                <input type="hidden" id="transition-table-generated" name="transition-table-generated" value="false">
+                <input
+                  type="hidden"
+                  id="transition-table-generated"
+                  name="transition-table-generated"
+                  value="false"
+                />
               </form>
             </div>
           </div>
@@ -188,6 +280,21 @@
               </div>
             </div>
           </div>
+
+          <!-- My Saved DFAs Card (shown when logged in) -->
+          <div class="card mt-4 my-dfas-container d-none">
+            <div class="card-header">
+              <i class="fas fa-save me-2"></i> My Saved DFAs
+            </div>
+            <div class="card-body">
+              <div id="saved-dfas-list" class="saved-dfas-list">
+                <p class="text-center text-muted loading-dfas">
+                  <i class="fas fa-spinner fa-spin mb-3"></i><br />
+                  Loading your saved DFAs...
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -195,48 +302,50 @@
     <!-- Team Section -->
     <section class="team-section">
       <div class="container">
-          <div class="team-header">
-              <h2 class="team-title">Meet the Team</h2>
-              <p class="team-subtitle">The talented minds behind this DFA Simulator project</p>
-          </div>
-          
-          <div class="row">
-              <div class="col-md-4">
-                  <div class="team-member">
-                      <div class="member-avatar">
-                          <i class="fas fa-user"></i>
-                      </div>
-                      <h3 class="member-name">Shayan Ali</h3>
-                      <p class="member-role">Lead Developer</p>
-                  </div>
+        <div class="team-header">
+          <h2 class="team-title">Meet the Team</h2>
+          <p class="team-subtitle">
+            The talented minds behind this DFA Simulator project
+          </p>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="team-member">
+              <div class="member-avatar">
+                <i class="fas fa-user"></i>
               </div>
-              
-              <div class="col-md-4">
-                  <div class="team-member">
-                      <div class="member-avatar">
-                          <i class="fas fa-user"></i>
-                      </div>
-                      <h3 class="member-name">Hamza Wahab</h3>
-                      <p class="member-role">Algorithm Specialist</p>
-                  </div>
-              </div>
-              
-              <div class="col-md-4">
-                  <div class="team-member">
-                      <div class="member-avatar">
-                          <i class="fas fa-user"></i>
-                      </div>
-                      <h3 class="member-name">Wania Amir</h3>
-                      <p class="member-role">UI/UX Designer</p>
-                  </div>
-              </div>
+              <h3 class="member-name">Shayan Ali</h3>
+              <p class="member-role">Lead Developer</p>
+            </div>
           </div>
-          
-          <div class="divider"></div>
-          
-          <div class="text-center text-white">
-              <p>© 2025 DFA Simulator | All Rights Reserved</p>
+
+          <div class="col-md-4">
+            <div class="team-member">
+              <div class="member-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <h3 class="member-name">Hamza Wahab</h3>
+              <p class="member-role">Algorithm Specialist</p>
+            </div>
           </div>
+
+          <div class="col-md-4">
+            <div class="team-member">
+              <div class="member-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <h3 class="member-name">Wania Amir</h3>
+              <p class="member-role">UI/UX Designer</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="text-center text-white">
+          <p>© 2025 DFA Simulator | All Rights Reserved</p>
+        </div>
       </div>
     </section>
 
@@ -244,15 +353,82 @@
     <footer class="footer">
       <div class="container">
         <p class="mb-0">
-          <i class="fas fa-project-diagram me-1"></i> Crafted with <i class="fas fa-brain text-info mx-1"></i> and <i class="fas fa-sparkles text-warning mx-1"></i> by Automata Enthusiasts
+          <i class="fas fa-project-diagram me-1"></i> Crafted with
+          <i class="fas fa-brain text-info mx-1"></i> and
+          <i class="fas fa-sparkles text-warning mx-1"></i> by Automata
+          Enthusiasts
         </p>
       </div>
     </footer>
+
+    <!-- Save DFA Modal -->
+    <div class="modal fade" id="saveDFAModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Save Your DFA</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="save-dfa-form">
+              <div class="mb-3">
+                <label for="dfa-name" class="form-label">DFA Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="dfa-name"
+                  placeholder="My Binary DFA"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="dfa-description" class="form-label"
+                  >Description (optional)</label
+                >
+                <textarea
+                  class="form-control"
+                  id="dfa-description"
+                  rows="3"
+                  placeholder="This DFA accepts strings..."
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-success" id="save-dfa-btn">
+              <i class="fas fa-save me-2"></i>Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase JS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="./codebase/firebase-config.js"></script>
+    <!-- Auth JS -->
+    <script src="./codebase/auth.js"></script>
     <!-- Custom JS -->
     <script src="./codebase/script.js"></script>
   </body>

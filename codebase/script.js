@@ -3,6 +3,529 @@
  * Handles the creation, validation and simulation of Deterministic Finite Automatons
  */
 
+// Firebase Authentication Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is logged in
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      // User is signed in
+      console.log('User is signed in:', user.email);
+      showLoggedInUI(user);
+    } else {
+      // User is not signed in, redirect to auth.html
+      console.log('No user is signed in, redirecting to login page');
+      window.location.href = 'auth.html';
+    }
+  });
+  
+  // Setup sign-out button
+  const signOutButton = document.getElementById('sign-out-button');
+  if (signOutButton) {
+    signOutButton.addEventListener('click', function() {
+      firebase.auth().signOut().then(() => {
+        console.log('User signed out successfully');
+      }).catch((error) => {
+        console.error('Sign out error:', error);
+      });
+    });
+  }
+});
+
+// Show UI elements for logged in users
+function showLoggedInUI(user) {
+  const userDisplay = document.getElementById('user-display');
+  const signOutButton = document.getElementById('sign-out-button');
+  const saveDfaContainer = document.querySelector('.save-dfa-container');
+  const myDfasContainer = document.querySelector('.my-dfas-container');
+  
+  if (userDisplay) {
+    userDisplay.innerHTML = `<span class="badge bg-success me-2"><i class="fas fa-user me-1"></i> ${user.email}</span>`;
+  }
+  
+  if (signOutButton) {
+    signOutButton.classList.remove('d-none');
+  }
+  
+  if (saveDfaContainer) {
+    saveDfaContainer.classList.remove('d-none');
+  }
+  
+  if (myDfasContainer) {
+    myDfasContainer.classList.remove('d-none');
+    loadSavedDFAs();
+  }
+  
+  // Set up save DFA functionality
+  const openSaveDfaModalButton = document.getElementById('open-save-dfa-modal');
+  const saveDfaButton = document.getElementById('save-dfa-btn');
+  
+  if (openSaveDfaModalButton) {
+    openSaveDfaModalButton.addEventListener('click', function() {
+      const saveDfaModal = new bootstrap.Modal(document.getElementById('saveDFAModal'));
+      saveDfaModal.show();
+    });
+  }
+  
+  if (saveDfaButton) {
+    saveDfaButton.addEventListener('click', function() {
+      saveDFA();
+    });
+  }
+}
+
+// Load user's saved DFAs
+function loadSavedDFAs() {
+  const savedDfasList = document.getElementById('saved-dfas-list');
+  if (!savedDfasList) return;
+  
+  savedDfasList.innerHTML = `
+    <p class="text-center text-muted">
+      <i class="fas fa-spinner fa-spin mb-3"></i><br />
+      Loading your saved DFAs...
+    </p>
+  `;
+  
+  // Make sure current user is available
+  const user = getCurrentUser();
+  if (!user) {
+    console.error('No authenticated user found when loading DFAs UI');
+    savedDfasList.innerHTML = `
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        You need to be logged in to view your saved DFAs.
+      </div>
+    `;
+    return;
+  }
+  
+  // Log that we're trying to load DFAs
+  console.log('Loading saved DFAs for user:', user.email);
+  
+  // Use the getUserDFAs function to fetch saved DFAs from Firebase
+  getUserDFAs()
+    .then(dfas => {
+      console.log('Successfully retrieved DFAs:', dfas.length);
+      
+      if (dfas.length === 0) {
+        savedDfasList.innerHTML = `
+          <div class="text-center p-4">
+            <i class="fas fa-lightbulb fa-2x mb-3 text-warning"></i>
+            <h5>No DFAs Yet</h5>
+            <p class="text-muted mb-3">You haven't saved any DFAs yet.</p>
+            <p><button class="btn btn-sm btn-primary" id="create-first-dfa">
+              <i class="fas fa-plus-circle me-1"></i> Create Your First DFA
+            </button></p>
+          </div>
+        `;
+        
+        // Add event listener to the create button
+        const createButton = document.getElementById('create-first-dfa');
+        if (createButton) {
+          createButton.addEventListener('click', () => {
+            console.log('Create first DFA button clicked');
+            
+            // Find any DFA creation form elements - try different selectors
+            const dfaBuilderSection = document.querySelector('.dfa-builder-section') || 
+                                     document.querySelector('#dfa-builder') ||
+                                     document.querySelector('#transition-table-form');
+                                     
+            // If we found a DFA builder section, scroll to it
+            if (dfaBuilderSection) {
+              console.log('Found DFA builder section, scrolling to it');
+              dfaBuilderSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              // Otherwise focus on the state input field if it exists
+              console.log('No DFA builder section found, focusing on state input');
+              const stateInput = document.getElementById('state-set');
+              if (stateInput) {
+                stateInput.focus();
+                // Scroll to the section containing this input
+                stateInput.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                // If all else fails, scroll to the bottom of the page where the form likely is
+                console.log('No state input found, scrolling to bottom of page');
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }
+            
+            // Highlight the state-set input field to draw attention
+            const stateSetInput = document.getElementById('state-set');
+            if (stateSetInput) {
+              stateSetInput.classList.add('highlight-input');
+              setTimeout(() => {
+                stateSetInput.classList.remove('highlight-input');
+              }, 2000);
+            }
+            
+            // Show a tooltip to guide the user
+            Swal.fire({
+              icon: 'info',
+              title: 'Create a New DFA',
+              text: 'Enter your states and alphabet, then click "Generate Transition Table" to begin creating your DFA.',
+              confirmButtonColor: '#3498db',
+              timer: 5000,
+              timerProgressBar: true
+            });
+          });
+        }
+        return;
+      }
+      
+      let html = '';
+      dfas.forEach(dfa => {
+        // Format the date or use a default value
+        let dateStr = 'Unknown date';
+        try {
+          if (dfa.createdAt && typeof dfa.createdAt.toDate === 'function') {
+            dateStr = new Date(dfa.createdAt.toDate()).toLocaleDateString();
+          } else if (dfa.updatedAt) {
+            dateStr = new Date(dfa.updatedAt).toLocaleDateString();
+          }
+        } catch (e) {
+          console.warn('Error formatting date for DFA:', e);
+        }
+        
+        html += `
+          <div class="saved-dfa-item">
+            <h5>${dfa.name || 'Unnamed DFA'}</h5>
+            <p class="small text-muted mb-1">
+              ${dateStr}
+            </p>
+            <div class="saved-dfa-actions">
+              <button class="btn btn-sm btn-primary load-dfa" data-dfa-id="${dfa.id}">
+                <i class="fas fa-upload me-1"></i> Load
+              </button>
+              <button class="btn btn-sm btn-outline-danger delete-dfa" data-dfa-id="${dfa.id}">
+                <i class="fas fa-trash me-1"></i> Delete
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      savedDfasList.innerHTML = html;
+      
+      // Add event listeners for load and delete buttons
+      document.querySelectorAll('.load-dfa').forEach(button => {
+        button.addEventListener('click', function() {
+          const dfaId = this.getAttribute('data-dfa-id');
+          loadDFA(dfaId);
+        });
+      });
+      
+      document.querySelectorAll('.delete-dfa').forEach(button => {
+        button.addEventListener('click', function() {
+          const dfaId = this.getAttribute('data-dfa-id');
+          confirmDeleteDFA(dfaId);
+        });
+      });
+    })
+    .catch(error => {
+      console.error('Error loading DFAs:', error);
+      savedDfasList.innerHTML = `
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <i class="fas fa-sync fa-2x mb-3 text-primary"></i>
+            <h5>Unable to Load DFAs</h5>
+            <p class="text-muted mb-3">We couldn't load your saved DFAs at this moment.</p>
+            <p class="small text-danger mb-3">Error: ${error.message}</p>
+            <button class="btn btn-outline-primary btn-sm retry-load-dfas">
+              <i class="fas fa-redo me-1"></i> Try Again
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Add event listener to the retry button
+      const retryButton = document.querySelector('.retry-load-dfas');
+      if (retryButton) {
+        retryButton.addEventListener('click', loadSavedDFAs);
+      }
+    });
+}
+
+// Save current DFA to Firebase
+function saveDFA() {
+  // Get data from form
+  const dfaName = document.getElementById('dfa-name').value.trim();
+  const dfaDescription = document.getElementById('dfa-description').value.trim();
+  
+  if (!dfaName) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Name',
+      text: 'Please enter a name for your DFA.',
+      confirmButtonColor: '#3498db'
+    });
+    return;
+  }
+  
+  try {
+    // Check if the transition table was generated first
+    const tableGenerated = document.getElementById('transition-table-generated').value === 'true';
+    if (!tableGenerated) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Transition Table Required',
+        text: 'Please generate the transition table first by defining states and alphabet, then clicking the "Generate Transition Table" button.',
+        confirmButtonColor: '#3498db'
+      });
+      return;
+    }
+    
+    // Collect DFA data
+    const states = document.getElementById('state-set').value.split(',').map(s => s.trim()).filter(Boolean);
+    const alphabet = document.getElementById('alphabet-set').value.split(',').map(a => a.trim()).filter(Boolean);
+    const initialState = document.getElementById('initial-state').value.trim();
+    const acceptStates = document.getElementById('accept-states').value.split(',').map(f => f.trim()).filter(Boolean);
+    
+    // Validate required fields
+    if (states.length === 0) {
+      throw new Error('Please define states (Q) for your DFA');
+    }
+    
+    if (alphabet.length === 0) {
+      throw new Error('Please define input alphabet (Σ) for your DFA');
+    }
+    
+    if (!initialState) {
+      throw new Error('Please specify an initial state (q₀)');
+    }
+    
+    if (acceptStates.length === 0) {
+      throw new Error('Please specify at least one accepting state (F)');
+    }
+    
+    // Check if transitions are defined
+    const transitionCells = document.querySelectorAll('.transition-cell');
+    if (transitionCells.length === 0) {
+      throw new Error('Please generate the transition table first');
+    }
+    
+    // Check if all transition cells are filled
+    let allTransitionsFilled = true;
+    let emptyCellCount = 0;
+    
+    transitionCells.forEach(cell => {
+      if (!cell.value.trim()) {
+        allTransitionsFilled = false;
+        emptyCellCount++;
+      }
+    });
+    
+    if (!allTransitionsFilled) {
+      throw new Error(`Please fill in all transitions (${emptyCellCount} cells are empty)`);
+    }
+    
+    // Collect transition table
+    const transitionTable = {};
+    states.forEach(state => {
+      transitionTable[state] = {};
+    });
+    
+    transitionCells.forEach(cell => {
+      const fromState = cell.getAttribute('data-from');
+      const input = cell.getAttribute('data-input');
+      const toState = cell.value.trim();
+      
+      if (!transitionTable[fromState]) {
+        transitionTable[fromState] = {};
+      }
+      
+      transitionTable[fromState][input] = toState;
+    });
+    
+    // Optionally save test strings
+    const inputString = document.getElementById('input-string').value.trim();
+    const testStrings = inputString ? [inputString] : [];
+    
+    // Prepare DFA data
+    const dfaData = {
+      name: dfaName,
+      description: dfaDescription || '',
+      states: states,
+      alphabet: alphabet,
+      initialState: initialState,
+      acceptStates: acceptStates,
+      transitionTable: transitionTable,
+      testStrings: testStrings,
+      updatedAt: new Date()
+    };
+    
+    console.log('Attempting to save DFA with data:', dfaData);
+    
+    // Show loading
+    Swal.fire({
+      title: 'Saving DFA...',
+      didOpen: () => {
+        Swal.showLoading();
+      },
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false
+    });
+    
+    // Direct call to Firebase instead of using the helper function which may be undefined
+    const user = getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Save directly to Firebase
+    firebase.firestore().collection('dfas').add({
+      userId: user.uid,
+      createdBy: user.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      ...dfaData
+    })
+    .then((docRef) => {
+      console.log('DFA saved successfully with ID:', docRef.id);
+      
+      // Close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('saveDFAModal'));
+      if (modal) modal.hide();
+      
+      // Show success
+      Swal.fire({
+        icon: 'success',
+        title: 'DFA Saved',
+        text: 'Your DFA has been saved successfully.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+      // Reload saved DFAs
+      setTimeout(() => loadSavedDFAs(), 500);
+    })
+    .catch(error => {
+      console.error('Firebase error saving DFA:', error);
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Save Failed',
+        text: `Failed to save your DFA: ${error.message}`,
+        confirmButtonColor: '#3498db'
+      });
+    });
+    
+  } catch (error) {
+    console.error('Error preparing DFA data:', error);
+    
+    Swal.fire({
+      icon: 'error',
+      title: 'Cannot Save DFA',
+      text: error.message,
+      confirmButtonColor: '#3498db'
+    });
+  }
+}
+
+// Confirm DFA deletion
+function confirmDeleteDFA(dfaId) {
+  Swal.fire({
+    title: 'Delete DFA?',
+    text: "This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      deleteDFA(dfaId)
+        .then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'Your DFA has been deleted.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          
+          loadSavedDFAs();
+        })
+        .catch(error => {
+          console.error('Error deleting DFA:', error);
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Delete Failed',
+            text: 'Failed to delete the DFA. Please try again.',
+            confirmButtonColor: '#3498db'
+          });
+        });
+    }
+  });
+}
+
+// Load DFA from Firebase
+function loadDFA(dfaId) {
+  // Show loading
+  Swal.fire({
+    title: 'Loading DFA...',
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    showConfirmButton: false
+  });
+  
+  // Get DFA document from Firestore
+  firebase.firestore().collection('dfas').doc(dfaId).get()
+    .then(doc => {
+      if (!doc.exists) {
+        throw new Error('DFA not found');
+      }
+      
+      const data = doc.data();
+      
+      // Populate form with DFA data
+      document.getElementById('state-set').value = data.states.join(', ');
+      document.getElementById('alphabet-set').value = data.alphabet.join(', ');
+      document.getElementById('initial-state').value = data.initialState;
+      document.getElementById('accept-states').value = data.acceptStates.join(', ');
+      
+      // Generate transition table
+      document.getElementById('generate-table').click();
+      
+      // Wait for table to be generated
+      setTimeout(() => {
+        // Fill in transitions
+        const transitionCells = document.querySelectorAll('.transition-cell');
+        transitionCells.forEach(cell => {
+          const fromState = cell.getAttribute('data-from');
+          const input = cell.getAttribute('data-input');
+          
+          if (data.transitionTable[fromState] && data.transitionTable[fromState][input]) {
+            cell.value = data.transitionTable[fromState][input];
+          }
+        });
+        
+        // Close loading
+        Swal.fire({
+          icon: 'success',
+          title: 'DFA Loaded',
+          text: `"${data.name}" has been loaded successfully.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }, 500);
+    })
+    .catch(error => {
+      console.error('Error loading DFA:', error);
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Load Failed',
+        text: 'Failed to load the DFA. Please try again.',
+        confirmButtonColor: '#3498db'
+      });
+    });
+}
+
 // Generate transition table UI based on states and alphabet input
 document.getElementById('generate-table').addEventListener('click', function() {
     const stateSet = document.getElementById('state-set').value.trim();
@@ -161,7 +684,8 @@ function processTransitions(states, inputs, transitionsRaw, initialState, finalS
     });
     
     // Check for invalid entries
-    if (!validateTransitions(states, inputs, transitionTable, initialState, finalStates)) {
+    const validationResult = validateTransitions(states, inputs, transitionTable, initialState, finalStates);
+    if (!validationResult.isValid) {
         Swal.fire({
             icon: 'error',
             title: 'Invalid Transition Table',
@@ -175,10 +699,7 @@ function processTransitions(states, inputs, transitionsRaw, initialState, finalS
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 <strong>Error:</strong> Invalid transition table configuration.
                 <ul class="mb-0 mt-2">
-                    <li>Ensure all states are declared</li>
-                    <li>Check that all inputs are valid</li>
-                    <li>Verify initial and final states exist in states list</li>
-                    <li>Make sure all transitions point to valid states</li>
+                    ${validationResult.errors.map(error => `<li>${error}</li>`).join('')}
                 </ul>
             </div>
         `;
@@ -206,27 +727,71 @@ function processTransitions(states, inputs, transitionsRaw, initialState, finalS
 
 /**
  * Validate transition table
+ * @returns {Object} Object with isValid boolean and error message if invalid
  */
 function validateTransitions(states, inputs, table, initialState, finalStates) {
+    // Object to hold validation results and specific error messages
+    const validationResult = {
+        isValid: true,
+        errors: []
+    };
+    
+    // Check if initial state exists in states list
     if (!states.includes(initialState)) {
-        return false;
+        validationResult.isValid = false;
+        validationResult.errors.push(`Initial state "${initialState}" is not defined in states list`);
     }
+    
+    // Check if all final states are valid
     for (let finalState of finalStates) {
         if (!states.includes(finalState)) {
-            return false;
+            validationResult.isValid = false;
+            validationResult.errors.push(`Accepting state "${finalState}" is not defined in states list`);
         }
     }
+    
+    // Check all transitions
     for (let state in table) {
+        // Check if the "from" state exists
         if (!states.includes(state)) {
-            return false;
+            validationResult.isValid = false;
+            validationResult.errors.push(`State "${state}" in transition table is not defined in states list`);
         }
+        
+        // Check transitions for each input
         for (let input in table[state]) {
-            if (!inputs.includes(input) || !states.includes(table[state][input])) {
-                return false;
+            // Check if input is valid
+            if (!inputs.includes(input)) {
+                validationResult.isValid = false;
+                validationResult.errors.push(`Input "${input}" for state "${state}" is not defined in alphabet list`);
+            }
+            
+            const toState = table[state][input];
+            // Check if destination state is valid
+            if (!states.includes(toState)) {
+                validationResult.isValid = false;
+                validationResult.errors.push(`Transition from "${state}" on input "${input}" goes to undefined state "${toState}"`);
+            }
+        }
+        
+        // Check if all inputs have transitions defined
+        for (let input of inputs) {
+            if (!table[state] || table[state][input] === undefined) {
+                validationResult.isValid = false;
+                validationResult.errors.push(`Missing transition for state "${state}" on input "${input}"`);
             }
         }
     }
-    return true;
+    
+    // Make sure all states have transitions defined
+    for (let state of states) {
+        if (!table[state]) {
+            validationResult.isValid = false;
+            validationResult.errors.push(`No transitions defined for state "${state}"`);
+        }
+    }
+    
+    return validationResult;
 }
 
 /**

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DFA Simulator - Authentication</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <!-- SweetAlert2 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet" />
+    <link href="css/auth.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="auth-container">
+      <!-- Left panel with branding and features -->
+      <div class="auth-left-panel">
+        <div class="logo-wrapper">
+          <div class="logo-icon-wrapper">
+            <i class="fas fa-project-diagram"></i>
+          </div>
+        </div>
+
+        <div class="brand-content">
+          <h1>DFA Simulator</h1>
+          <p class="tagline">
+            Visualize, create, and test your automata with ease
+          </p>
+        </div>
+
+        <!-- Professional hero section -->
+        <div class="professional-hero">
+          <div class="hero-content">
+            <div class="hero-icon">
+              <i class="fas fa-sitemap"></i>
+            </div>
+            <h2>Deterministic Finite Automata</h2>
+            <p>
+              Design, simulate and analyze automata with powerful visualization
+              tools
+            </p>
+
+            <ul class="feature-checklist">
+              <li>
+                <i class="fas fa-check-circle"></i> Create complex state
+                machines
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Test string acceptance in
+                real-time
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i> Save and share your automata
+                models
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <i class="fas fa-cloud"></i>
+            <div class="feature-text">
+              <h3>Cloud Storage</h3>
+              <p>Save your DFAs to access from anywhere</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <i class="fas fa-share-alt"></i>
+            <div class="feature-text">
+              <h3>Share & Collaborate</h3>
+              <p>Work with others on complex automata</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <i class="fas fa-history"></i>
+            <div class="feature-text">
+              <h3>Version History</h3>
+              <p>Track changes to your DFA designs</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer with just copyright -->
+        <div class="left-panel-footer">
+          <div class="copyright-text">© 2025 DFA Simulator</div>
+        </div>
+      </div>
+
+      <!-- Right panel with auth form -->
+      <div class="auth-right-panel">
+        <div class="auth-form-container">
+          <div class="auth-header">
+            <h2>Welcome back</h2>
+            <p>Please enter your details to sign in</p>
+          </div>
+
+          <!-- Auth tabs -->
+          <ul class="nav nav-tabs auth-tabs" id="authTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link tab-btn active"
+                id="login-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#login-tab-pane"
+                type="button"
+                role="tab"
+                aria-controls="login-tab-pane"
+                aria-selected="true"
+              >
+                Login
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link tab-btn"
+                id="signup-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#signup-tab-pane"
+                type="button"
+                role="tab"
+                aria-controls="signup-tab-pane"
+                aria-selected="false"
+              >
+                Sign Up
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab content -->
+          <div class="tab-content" id="authTabsContent">
+            <!-- Login form -->
+            <div
+              class="tab-pane fade show active"
+              id="login-tab-pane"
+              role="tabpanel"
+              aria-labelledby="login-tab"
+            >
+              <form id="login-form">
+                <div class="form-group">
+                  <label for="login-email">Email</label>
+                  <div class="input-field">
+                    <i class="fas fa-envelope"></i>
+                    <input
+                      type="email"
+                      id="login-email"
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="label-row">
+                    <label for="login-password">Password</label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                  </div>
+                  <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input
+                      type="password"
+                      id="login-password"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <i class="fas fa-eye-slash toggle-password"></i>
+                  </div>
+                </div>
+
+                <div class="remember-me">
+                  <input type="checkbox" id="remember-me" />
+                  <label for="remember-me">Remember me for 30 days</label>
+                </div>
+
+                <button type="submit" class="btn-sign-in" id="login-button">
+                  Sign in
+                </button>
+              </form>
+            </div>
+
+            <!-- Sign Up form -->
+            <div
+              class="tab-pane fade"
+              id="signup-tab-pane"
+              role="tabpanel"
+              aria-labelledby="signup-tab"
+            >
+              <form id="signup-form">
+                <div class="form-group">
+                  <label for="signup-email">Email</label>
+                  <div class="input-field">
+                    <i class="fas fa-envelope"></i>
+                    <input
+                      type="email"
+                      id="signup-email"
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="signup-password">Password</label>
+                  <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input
+                      type="password"
+                      id="signup-password"
+                      placeholder="Create a password"
+                      required
+                    />
+                    <i class="fas fa-eye-slash toggle-password"></i>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="signup-confirm-password">Confirm Password</label>
+                  <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input
+                      type="password"
+                      id="signup-confirm-password"
+                      placeholder="Confirm your password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-sign-in" id="signup-button">
+                  Sign up
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attribution badge -->
+    <div class="attribution-badge">
+      <span>Crafted with</span>
+      <i class="fas fa-code"></i>
+      <span>by Automata Enthusiasts</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p class="mb-0">
+          <i class="fas fa-project-diagram me-1"></i> Crafted with
+          <i class="fas fa-brain text-info mx-1"></i> and
+          <i class="fas fa-sparkles text-warning mx-1"></i> by Automata
+          Enthusiasts
+        </p>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase (using version 8.x for better compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="./codebase/firebase-config.js"></script>
+
+    <!-- Custom Auth JS -->
+    <script src="./codebase/auth.js"></script>
+
+    <!-- Password visibility toggle -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggleButtons = document.querySelectorAll(".toggle-password");
+
+        toggleButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const passwordInput = this.previousElementSibling;
+
+            // Toggle password visibility
+            if (passwordInput.type === "password") {
+              passwordInput.type = "text";
+              this.classList.replace("fa-eye-slash", "fa-eye");
+            } else {
+              passwordInput.type = "password";
+              this.classList.replace("fa-eye", "fa-eye-slash");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

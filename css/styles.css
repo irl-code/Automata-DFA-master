@@ -31,6 +31,66 @@ body {
   font-weight: 300;
 }
 
+/* User authentication UI */
+.user-status-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  padding: 5px 15px;
+  margin-top: 10px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#user-display .badge {
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-weight: normal;
+  letter-spacing: 0.3px;
+  background-color: #27ae60 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+#user-display .badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#user-display .badge i {
+  font-size: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#sign-out-button {
+  font-size: 0.9rem;
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+#sign-out-button:hover {
+  background-color: #e74c3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Card styling */
 .card {
   border-radius: 15px;
@@ -297,4 +357,16 @@ body {
   background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.5), rgba(255,255,255,0));
   margin: 2rem auto;
   width: 80%;
+}
+
+/* Add highlight animation for "Create your first DFA" focus */
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+.highlight-input {
+  animation: highlight-pulse 2s infinite;
+  border-color: var(--primary-color) !important;
 }
